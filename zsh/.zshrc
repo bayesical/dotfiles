@@ -64,13 +64,45 @@ if [ -f "$HOME/.local/share/dnvm/env" ]; then
     . "$HOME/.local/share/dnvm/env"
 fi
 
-# Function to fuzzy-find a repository and open a new tmux session
+# Function to fuzzy-find bytes within the ~/repos directory and open a new tmux session and nvim session
+find_bytes() {
+  # Where all the repos are located
+  local base_dir=~/repos
+
+  # Use fzf to select a file (you can filter by file types with -name pattern)
+  local selected_occurrence=$(rg -n --no-heading "" "$base_dir" | fzf --prompt="Select an occurrence: ")
+
+  # Exit if no file is selected
+  [[ -z $selected_occurrence ]] && return
+
+  # Extract the file path and line number from the selected occurrence
+  local selected_file=$(echo "$selected_occurrence" | cut -d: -f1)
+  local line_number=$(echo "$selected_occurrence" | cut -d: -f2)
+
+  # Open the selected file in Neovim at the given line number
+  nvim +$line_number "$selected_file"
+}
+
+# Function to fuzzy-find file within the ~/repos directory and open a new tmux session and nvim session
+find_file() {
+  # Where all the repos are located
+  local base_dir=~/repos
+
+  local file=$(find $base_dir -type f | fzf --preview='bat --color=always {}')
+  
+  # If no file is selected, return
+  [[ -z $file ]] && return
+
+  nvim "$file"
+}
+
+# Function to fuzzy-find a repository and open a new tmux session and nvim sesion
 find_repo() {
   # Where all the repos are located
   local base_dir=~/repos
 
   # Use fzf to select a repository from the base directory
-  local repo=$(find "$base_dir" -mindepth 1 -maxdepth 1 -type d | fzf --prompt="Select a repository: " --preview="tree -L 2 {}")
+  local repo=$(find "$base_dir" -type d -name ".git" -prune -exec dirname {} \; | fzf --prompt="Select a repository: " --preview="tree -L 2 {}")
 
   # If no repository is selected, return
   [[ -z $repo ]] && return
@@ -85,6 +117,9 @@ find_repo() {
     # Create a new tmux session in the selected repository
     echo "Creating new tmux session: $repo_name"
     tmux new-session -d -s "$repo_name" -c "$repo"
+    
+    # Open nvim in the new tmux session
+    tmux send-keys -t "$repo_name" "nvim" C-m
   fi
 
   # Check if already inside a tmux session
@@ -98,4 +133,6 @@ find_repo() {
 }
 
 stty -ixon
-bindkey -s '^q' 'find_repo\n'
+bindkey -s '^b' 'find_repo\n'
+bindkey -s '^q' 'find_file\n'
+bindkey -s '^x' 'find_bytes\n'
