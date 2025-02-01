@@ -9,6 +9,8 @@ Having this as a public repository allows me to do two things:
 
 # Dependencies (Pre-requisite)
 
+This repository is targetted solely on machines with a UNIX based operating system.
+
 It is assumed that you have the following applications installed on your machine:
 
 * ZSH- [Installing ZSH](https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)
@@ -49,5 +51,4 @@ chmod +x ./setup.sh
 # Supplementary
 
 If you wish to make any changes to the configuration, do so in the dotfiles repository itself. This is because the setup shell script will have created symlinks **to the files in this repository** at the locations where the applications looks for its configuration file.
-
 
