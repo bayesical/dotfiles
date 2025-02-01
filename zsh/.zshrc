@@ -64,31 +64,21 @@ if [ -f "$HOME/.local/share/dnvm/env" ]; then
     . "$HOME/.local/share/dnvm/env"
 fi
 
-# Function to fuzzy-find bytes within the ~/repos directory and open a new tmux session and nvim session
 find_bytes() {
-  # Where all the repos are located
-  local base_dir=~/repos
-
-  # Use fzf to select a file (you can filter by file types with -name pattern)
-  local selected_occurrence=$(rg -n --no-heading "" "$base_dir" | fzf --prompt="Select an occurrence: ")
-
-  # Exit if no file is selected
-  [[ -z $selected_occurrence ]] && return
-
-  # Extract the file path and line number from the selected occurrence
-  local selected_file=$(echo "$selected_occurrence" | cut -d: -f1)
-  local line_number=$(echo "$selected_occurrence" | cut -d: -f2)
-
-  # Open the selected file in Neovim at the given line number
-  nvim +$line_number "$selected_file"
+  fzf --ansi \
+      --disabled \
+      --query "" \
+      --prompt "Select an occurrence: " \
+      --delimiter : \
+      --bind "change:reload:rg --fixed-strings --no-heading --line-number --color=always {q} . 2>/dev/null || true" \
+      --preview '[[ -n {1} && -n {2} ]] && bat --style=numbers --color=always --highlight-line {2} {1} || echo "I would tell a chemistry joke, but I might not get a reaction..."' \
+      --preview-window=right:60%:wrap \
+      --bind 'enter:execute(nvim +{2} {1})'
 }
 
 # Function to fuzzy-find file within the ~/repos directory and open a new tmux session and nvim session
 find_file() {
-  # Where all the repos are located
-  local base_dir=~/repos
-
-  local file=$(find $base_dir -type f | fzf --preview='bat --color=always {}')
+  local file=$(find $1 -type f | fzf --preview='bat --color=always {}')
   
   # If no file is selected, return
   [[ -z $file ]] && return
@@ -98,11 +88,8 @@ find_file() {
 
 # Function to fuzzy-find a repository and open a new tmux session and nvim sesion
 find_repo() {
-  # Where all the repos are located
-  local base_dir=~/repos
-
   # Use fzf to select a repository from the base directory
-  local repo=$(find "$base_dir" -type d -name ".git" -prune -exec dirname {} \; | fzf --prompt="Select a repository: " --preview="tree -L 2 {}")
+  local repo=$(find "$1" -type d -name ".git" -prune -exec dirname {} \; | fzf --prompt="Select a repository: " --preview="tree -L 2 {}")
 
   # If no repository is selected, return
   [[ -z $repo ]] && return
@@ -133,6 +120,11 @@ find_repo() {
 }
 
 stty -ixon
-bindkey -s '^b' 'find_repo\n'
-bindkey -s '^q' 'find_file\n'
-bindkey -s '^x' 'find_bytes\n'
+bindkey -s '^br' 'find_repo ~/repos\n'
+bindkey -s '^qr' 'find_file ~/repos\n'
+bindkey -s '^xr' 'find_bytes ~/repos\n'
+
+bindkey -s '^bh' 'find_repo ~\n'
+bindkey -s '^qh' 'find_file ~\n'
+bindkey -s '^xh' 'find_bytes ~\n'
+
