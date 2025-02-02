@@ -2,10 +2,11 @@
 
 This is a repo which houses all the dotfiles (configuration files) which I use for my development environment.
 
-Having this as a public repository allows me to do two things:
+Having this as a public repository allows me to do the following things:
 
 1. To be able to recreate my development environment with a few trivial commands
-2. To allow others to take parts they like about my development environment or to be able to fully recreate it 
+2. To allow others to take parts they like about my development environment or to be able to fully recreate
+3. To version control my configuration files
 
 ## Dependencies (Pre-requisite)
 
