@@ -128,3 +128,4 @@ bindkey -s '^bh' 'find_repo ~\n'
 bindkey -s '^qh' 'find_file ~\n'
 bindkey -s '^xh' 'find_bytes ~\n'
 
+alias f='ffmpeg'
